@@ -16,7 +16,6 @@ namespace Amazon.Controllers
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IConfiguration config;
-
         public AccountController(UserManager<ApplicationUser> userManager, IConfiguration config)
         {
             this.userManager = userManager;

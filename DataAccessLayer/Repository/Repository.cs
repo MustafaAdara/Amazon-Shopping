@@ -1,6 +1,7 @@
 ﻿using Amazon.Data;
 using DataAccessLayer.IterfacesRepositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,36 +12,81 @@ namespace DataAccessLayer.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly TheContext _context;
-
-        public Repository(TheContext context)
+        private TheContext _context;
+        private DbSet<T> dbSet;
+        private readonly ILogger _logger;
+        public Repository(TheContext context, ILogger logger)
         {
             _context = context;
+            this.dbSet = _context.Set<T>();
+            _logger = logger;
         }
 
-        public void Add(T entity)
+        public async Task<bool> Add(T entity)
         {
-            _context.Set<T>().Add(entity);
+            try
+            {
+                await dbSet.AddAsync(entity);
+                return true;
+            }
+            catch(Exception ex) 
+            {
+                _logger.LogError(ex, "Error adding entity");
+                return false;
+            }
+
         }
 
-        public void Delete(T entity)
+        public async Task<bool> Delete(T entity)
         {
-            _context.Set<T>().Remove(entity);
+            try
+            {
+                var theOne = await dbSet.FindAsync(entity);
+                if (theOne != null) 
+                {
+                    dbSet.Remove(theOne);
+                    return true ;
+                }
+                else
+                {
+                    _logger.LogWarning("Entity} not found for deletion", entity);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting entity");
+                return false;
+            }
         }
 
-        public IEnumerable<T> GetAll()
+        public async Task<IEnumerable<T>> GetAll()
         {
-            return _context.Set<T>().ToList();
+            return await dbSet.ToListAsync();
         }
 
-        public T GetById(int id)
+        public async Task<T> GetById(string id)
         {
-            return _context.Set<T>().Find(id);
+            try
+            {
+                var item = await dbSet.FindAsync(id);
+                if(item == null)
+                {
+                    _logger.LogWarning("Entity with id {Id} was not found.", id);
+                }
+                return item;
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError(ex, "Error getting entity with id {Id}", id);
+                return null;
+            }
+            
         }
 
         public void Update(T entity)
         {
-            _context.Set<T>().Attach(entity);
+            dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;
         }
     }

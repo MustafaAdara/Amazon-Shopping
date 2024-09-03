@@ -15,6 +15,6 @@ namespace DataAccessLayer.UnitOfWork
         IOrderRepository OrderRepository { get; }
         IOrderItemRepository OrderItemRepository { get; }
         IReviewRepository ReviewRepository { get; }
-        void save();
+        Task CompleteAsync();
     }
 }

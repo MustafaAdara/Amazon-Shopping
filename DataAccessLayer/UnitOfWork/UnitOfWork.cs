@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.UnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IDisposable // IDisposable is used to free unmanaged resources 
     {
         private readonly TheContext _context;
         private IProductRepository? _productRepository;
@@ -40,9 +40,9 @@ namespace DataAccessLayer.UnitOfWork
             _context.Dispose();
         }
 
-        public void save()
+        public async Task CompleteAsync()
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

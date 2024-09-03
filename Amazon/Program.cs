@@ -1,7 +1,11 @@
 using Amazon.Data;
 using Amazon.Models;
+using AutoMapper;
+using BusinessLogicLayer.IServices;
+using BusinessLogicLayer.Services;
 using DataAccessLayer.IterfacesRepositories;
 using DataAccessLayer.Repository;
+using DataAccessLayer.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -53,15 +57,11 @@ namespace Amazon
                       new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                   };
               });
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
 
             builder.Services.AddSwaggerGen();
             var app = builder.Build();
